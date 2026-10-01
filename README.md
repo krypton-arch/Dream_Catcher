@@ -106,8 +106,10 @@ Make sure your code is in a Git repository (GitHub, GitLab, etc.)
 3. Connect your repository
 4. Configure the service with the repository root as the **Root Directory** (leave it blank if `package.json` is at the repository root):
     - **Environment**: Node
-    - **Build Command**: `npm ci`
+    - **Build Command**: `npm_config_build_from_source=true npm ci`
     - **Start Command**: `npm start`
+
+The source-build setting makes `sqlite3` compile against Render's system libraries instead of downloading a binary that may require a newer glibc. If the service already exists, update its Build Command in **Settings**, then trigger a **Clear build cache & deploy** so the incompatible native binary is not reused.
 
 ### 3. Add Environment Variables
 
