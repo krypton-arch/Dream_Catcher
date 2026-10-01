@@ -84,7 +84,7 @@ Production mode:
 npm start
 ```
 
-The app will be available at `http://localhost:3000`
+The app will be available at `http://localhost:3001` by default.
 
 ## API Endpoints
 
@@ -104,16 +104,16 @@ Make sure your code is in a Git repository (GitHub, GitLab, etc.)
 1. Go to https://render.com and sign in
 2. Click "New +" and select "Web Service"
 3. Connect your repository
-4. Configure the service:
-   - **Name**: dream-journal (or your choice)
-   - **Environment**: Node
-   - **Build Command**: `npm install`
-   - **Start Command**: `npm start`
+4. Configure the service with the repository root as the **Root Directory** (leave it blank if `package.json` is at the repository root):
+    - **Environment**: Node
+    - **Build Command**: `npm ci`
+    - **Start Command**: `npm start`
 
 ### 3. Add Environment Variables
 
 In the Render dashboard, add:
-- `ANTHROPIC_API_KEY`: Your Anthropic API key
+- `GEMINI_API_KEY`: Your Google Gemini API key
+- `GEMINI_MODEL`: Optional; defaults to `gemini-2.5-flash`
 
 ### 4. Deploy
 
@@ -121,10 +121,7 @@ Click "Create Web Service" and Render will deploy your app automatically.
 
 ### 5. Database Persistence
 
-Note: The SQLite database file will be stored in Render's ephemeral filesystem. For production, consider:
-- Using Render's persistent disk feature
-- Migrating to PostgreSQL for better persistence
-- Backing up data regularly
+Note: SQLite data is stored on Render's ephemeral filesystem unless you attach a persistent disk. For persistent storage, attach a disk and set `DATABASE_PATH` to a file path on that disk, such as `/var/data/dreams.db`.
 
 ## Usage
 
