@@ -111,6 +111,8 @@ Make sure your code is in a Git repository (GitHub, GitLab, etc.)
 
 The source-build setting makes `sqlite3` compile against Render's system libraries instead of downloading a binary that may require a newer glibc. If the service already exists, update its Build Command in **Settings**, then trigger a **Clear build cache & deploy** so the incompatible native binary is not reused.
 
+For a Docker Hub image deployment, create a **Docker** web service and enter the image URL, for example `docker.io/your-user/dream-catcher:latest`. The image defaults `DATABASE_PATH` to `/app/data/dreams.db`, a directory writable by its `node` user. If you need persistent SQLite data, attach a Render disk at `/app/data`; if `DATABASE_PATH` is set in Render's environment, make sure it points to a file under that mounted directory.
+
 ### 3. Add Environment Variables
 
 In the Render dashboard, add:
@@ -123,7 +125,7 @@ Click "Create Web Service" and Render will deploy your app automatically.
 
 ### 5. Database Persistence
 
-Note: SQLite data is stored on Render's ephemeral filesystem unless you attach a persistent disk. For persistent storage, attach a disk and set `DATABASE_PATH` to a file path on that disk, such as `/var/data/dreams.db`.
+SQLite data is stored on Render's ephemeral filesystem unless you attach a persistent disk. For a Docker deployment, attach a disk with mount path `/app/data`; the image stores the database at `/app/data/dreams.db` by default. For a native Node deployment, attach a disk at `/var/data` and set `DATABASE_PATH` to `/var/data/dreams.db`.
 
 ## Usage
 

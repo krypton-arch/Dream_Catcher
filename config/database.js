@@ -1,5 +1,6 @@
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
+import { mkdir } from 'fs/promises';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
@@ -12,6 +13,7 @@ let db = null;
 
 export async function getDatabase() {
   if (!db) {
+    await mkdir(dirname(dbPath), { recursive: true });
     db = await open({
       filename: dbPath,
       driver: sqlite3.Database

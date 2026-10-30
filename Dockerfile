@@ -1,6 +1,7 @@
 FROM node:22-trixie-slim
 
 ENV NODE_ENV=production
+ENV DATABASE_PATH=/app/data/dreams.db
 WORKDIR /app
 
 COPY package*.json ./
