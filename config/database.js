@@ -1,35 +1,33 @@
-import sqlite3 from 'sqlite3';
-import { open } from 'sqlite';
-import { mkdir } from 'fs/promises';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import pg from 'pg';
+const { Pool } = pg;
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const connectionString = process.env.DATABASE_URL;
 
-const dbPath = process.env.DATABASE_PATH || join(dirname(__dirname), 'dreams.db');
+const poolConfig = connectionString
+  ? {
+      connectionString,
+      ssl:
+        process.env.DATABASE_SSL === 'true' ||
+        (process.env.NODE_ENV === 'production' &&
+          !connectionString.includes('localhost') &&
+          !connectionString.includes('127.0.0.1'))
+          ? { rejectUnauthorized: false }
+          : false,
+    }
+  : {
+      user: process.env.PGUSER || process.env.DB_USER || 'postgres',
+      host: process.env.PGHOST || process.env.DB_HOST || 'localhost',
+      database: process.env.PGDATABASE || process.env.DB_NAME || 'dream_catcher',
+      password: process.env.PGPASSWORD || process.env.DB_PASSWORD || 'postgres',
+      port: parseInt(process.env.PGPORT || process.env.DB_PORT || '5432', 10),
+    };
 
-let db = null;
+const pool = new Pool(poolConfig);
 
-export async function getDatabase() {
-  if (!db) {
-    await mkdir(dirname(dbPath), { recursive: true });
-    db = await open({
-      filename: dbPath,
-      driver: sqlite3.Database
-    });
-    
-    // Enable foreign keys
-    await db.exec('PRAGMA foreign_keys = ON');
-  }
-  return db;
-}
+pool.on('error', (err) => {
+  console.error('Unexpected error on idle PostgreSQL client:', err);
+});
 
-export async function closeDatabase() {
-  if (db) {
-    await db.close();
-    db = null;
-  }
-}
-
-export default { getDatabase, closeDatabase };
+export const query = (text, params) => pool.query(text, params);
+export default pool;
+export { pool };
