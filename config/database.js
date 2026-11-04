@@ -3,6 +3,17 @@ const { Pool } = pg;
 
 const connectionString = process.env.DATABASE_URL;
 
+if (!connectionString && !process.env.PGHOST) {
+  console.warn(
+    '\n⚠️  [Database Warning] DATABASE_URL is not set!\n' +
+    'The app is falling back to localhost:5432. On cloud hosts like Render, this will cause ECONNREFUSED.\n' +
+    'To fix this on Render:\n' +
+    '  1. Create a PostgreSQL database on Render (Dashboard -> New -> PostgreSQL)\n' +
+    '  2. Copy its "Internal Database URL"\n' +
+    '  3. Add DATABASE_URL to your Web Service Environment variables in the Render dashboard.\n'
+  );
+}
+
 const poolConfig = connectionString
   ? {
       connectionString,

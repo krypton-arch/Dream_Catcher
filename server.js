@@ -74,17 +74,34 @@ process.on('SIGINT', ()=> {
 let server
 let isShuttingDown = false;
 
-// Initialize database then start server
-try {
-  await initDatabase();
+// Start HTTP server immediately so cloud platforms (Render, Railway, Heroku) detect port binding
+server = app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});
 
-  server =app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-  });
-} catch (error) {
-  console.error('Failed to initialize database:', error);
-  process.exit(1);
+// Initialize database with retries to handle cloud database boot delays gracefully
+async function initializeDatabaseWithRetry(maxRetries = 5, delayMs = 3000) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      await initDatabase();
+      console.log('Database connected and initialized successfully');
+      return;
+    } catch (error) {
+      console.error(`Database connection attempt ${attempt}/${maxRetries} failed:`, error.message);
+      if (attempt < maxRetries) {
+        console.log(`Retrying in ${delayMs / 1000}s...`);
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+      } else {
+        console.error(
+          'Could not connect to PostgreSQL. The server will stay running to respond to /health (reporting DOWN). ' +
+          'Please verify that DATABASE_URL is set in your environment variables.'
+        );
+      }
+    }
+  }
 }
+
+initializeDatabaseWithRetry();
 
 
 async function gracefulShutdown(signal) {
