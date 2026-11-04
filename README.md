@@ -8,14 +8,14 @@ A full-stack web application that allows users to record their dreams and receiv
 - Get AI interpretations of your dreams
 - View all past dreams and their interpretations
 - Delete dreams
-- SQLite database for persistent storage
+- PostgreSQL database for persistent storage
 - Vanilla JavaScript frontend
 - Express backend with RESTful API
 
 ## Tech Stack
 
 - **Backend**: Node.js, Express
-- **Database**: SQLite
+- **Database**: PostgreSQL
 - **Frontend**: HTML, CSS, Vanilla JavaScript
 - **AI**: Google Gemini API
 
@@ -27,7 +27,7 @@ dream-journal/
 ├── package.json        # Dependencies and scripts
 ├── .env               # Environment variables (create this)
 ├── .env.example       # Example env file
-├── dreams.db          # SQLite database (auto-created)
+├── scripts/           # Migration scripts
 └── public/
     ├── index.html     # Frontend HTML
     ├── styles.css     # Styles
@@ -44,7 +44,7 @@ Set `GEMINI_API_KEY` in a root `.env` file (or in your shell), then start the ap
 docker compose up --build
 ```
 
-Open `http://localhost:3001`. Compose stores the SQLite database in the `dreams-data` named volume, so it persists across container rebuilds. To stop the app, run `docker compose down`; to also delete the database, run `docker compose down --volumes`.
+Open `http://localhost:3001`. Compose runs both the app and a PostgreSQL container with healthchecks and persistent storage in the `pgdata` volume. To stop the app, run `docker compose down`; to also delete the database volume, run `docker compose down --volumes`.
 
 Set `HOST_PORT` in `.env` to change the host port, or set `GEMINI_MODEL` to use a different Gemini model.
 
@@ -106,26 +106,19 @@ Make sure your code is in a Git repository (GitHub, GitLab, etc.)
 3. Connect your repository
 4. Configure the service with the repository root as the **Root Directory** (leave it blank if `package.json` is at the repository root):
     - **Environment**: Node
-    - **Build Command**: `npm_config_build_from_source=true npm ci`
+    - **Build Command**: `npm ci`
     - **Start Command**: `npm start`
-
-The source-build setting makes `sqlite3` compile against Render's system libraries instead of downloading a binary that may require a newer glibc. If the service already exists, update its Build Command in **Settings**, then trigger a **Clear build cache & deploy** so the incompatible native binary is not reused.
-
-For a Docker Hub image deployment, create a **Docker** web service and enter the image URL, for example `docker.io/your-user/dream-catcher:latest`. The image defaults `DATABASE_PATH` to `/app/data/dreams.db`, a directory writable by its `node` user. If you need persistent SQLite data, attach a Render disk at `/app/data`; if `DATABASE_PATH` is set in Render's environment, make sure it points to a file under that mounted directory.
 
 ### 3. Add Environment Variables
 
 In the Render dashboard, add:
 - `GEMINI_API_KEY`: Your Google Gemini API key
 - `GEMINI_MODEL`: Optional; defaults to `gemini-2.5-flash`
+- `DATABASE_URL`: Connection string to your PostgreSQL instance (e.g., Render PostgreSQL, Supabase, Neon)
 
 ### 4. Deploy
 
 Click "Create Web Service" and Render will deploy your app automatically.
-
-### 5. Database Persistence
-
-SQLite data is stored on Render's ephemeral filesystem unless you attach a persistent disk. For a Docker deployment, attach a disk with mount path `/app/data`; the image stores the database at `/app/data/dreams.db` by default. For a native Node deployment, attach a disk at `/var/data` and set `DATABASE_PATH` to `/var/data/dreams.db`.
 
 ## Usage
 
